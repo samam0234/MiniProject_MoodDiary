@@ -46,7 +46,11 @@ def create_app() -> Flask:
 
     @app.get("/health")
     def health():
-        return ok({"status": "ok", "backend": os.getenv("EMOTION_BACKEND", "lexicon")})
+        backend = os.getenv("EMOTION_BACKEND", "lexicon")
+        data = {"status": "ok", "backend": backend}
+        if backend == "ollama":
+            data["model"] = os.getenv("OLLAMA_MODEL", "gemma4:12b")
+        return ok(data)
 
     @app.post("/analyze")
     def analyze():
