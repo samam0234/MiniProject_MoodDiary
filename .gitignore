@@ -1,0 +1,23 @@
+# virtual environments
+.venv
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# local data / secrets
+db.sqlite3
+.env
+.env.*
+!.env.example
+
+# test / tooling caches
+.pytest_cache/
+
+# Reflex build artifacts
+.web/
+.states/
+frontend/assets/external/
+reflex.lock
