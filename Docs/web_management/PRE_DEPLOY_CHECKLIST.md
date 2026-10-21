@@ -29,7 +29,8 @@
 
 - [ ] 구조화 로그(JSON) 수집 위치 결정: `ai_analysis_done` / `ai_analysis_fallback` / `analyze_done` 이벤트 모니터링 (fallback 비율이 높으면 AI 서버 장애)
 - [ ] DB 백업 정책
-- [ ] AI 서버 timeout(5초)과 Reflex 요청 timeout(20초) 조정
+- [ ] timeout 체인 점검: `OLLAMA_TIMEOUT(60) < AI_SERVER_TIMEOUT(90) < MOOD_DIARY_API_TIMEOUT(120)` — 서버 사양에 맞게 조정
+- [ ] Ollama 서버 위치/사양 (12B 모델 약 8GB 메모리, GPU 유무에 따라 응답 시간이 크게 달라짐), 외부 비공개, 모델 사전 로딩(`keep_alive`)
 - [ ] Reflex 프로덕션 실행 방식 결정 (`reflex export` 정적 + 백엔드 분리, 또는 `reflex run --env prod`)
 - [ ] Python 3.11+ 로 상향 (Reflex 가 3.10 지원 중단 예고)
 

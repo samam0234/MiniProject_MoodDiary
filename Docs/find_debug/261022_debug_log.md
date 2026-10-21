@@ -30,4 +30,11 @@
 - `App(theme=...)` deprecated → `rx.plugins.RadixThemesPlugin(theme=...)` 로 이동.
 - 남은 경고: Python 3.10 지원 중단 예고 (동작에는 영향 없음).
 
-## 7. Reflex 종료 후 포트 8001 이 계속 점유됨 → `Docs/repeater/261022_port_conflict.md` 참고
+## 7. Ollama 연동 시 확인한 점
+- `gemma4:12b` 는 thinking 기능이 있어 `think:false` 로 끄고, `format` 에 JSON 스키마를 줘서 구조화 출력을 받는다.
+- 첫 호출 ~14초(모델 로딩 8.5초 포함)라 기존 AI timeout 5초로는 항상 fallback 이 된다 → `.env` 에서 OLLAMA 60 / Django 90 / 프론트 120 초로 상향.
+- 로컬 `.env` 가 `EMOTION_BACKEND=ollama` 이면 테스트가 실제 LLM 을 부를 수 있어 `ai_server/conftest.py` 로 lexicon 을 강제한다.
+- 임시 서버를 5055 에 띄웠더니 다른 프로그램(`innorixes`)이 쓰는 포트라 404 응답이 왔다 → 5077 로 변경. 포트를 쓰기 전 점유 여부 확인.
+- PowerShell `Invoke-RestMethod` 는 charset 없는 JSON 응답의 한글을 깨뜨려 보여준다(서버 응답은 정상 UTF-8). 한글 확인은 Python 으로 한다.
+
+## 8. Reflex 종료 후 포트 8001 이 계속 점유됨 → `Docs/repeater/261022_port_conflict.md` 참고

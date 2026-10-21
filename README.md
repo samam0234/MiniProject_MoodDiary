@@ -17,8 +17,8 @@
 
 ## 현재 상태
 
-`feature/mood-diary-mvp` 에서 MVP 구현 완료 (병합 전). 자동 테스트 44개 통과(AI 13 · Django 26 · 프론트 5), 세 서버 연동 확인.
-**아직 확인하지 않은 것**: 브라우저에서의 화면 조작(차트 렌더링 포함), transformers 백엔드, PostgreSQL 연결. 자세한 내용은 [검증 체크리스트](Docs/vaildates/VALIDATION_CHECKLIST.md).
+`feature/mood-diary-mvp` 에서 MVP 구현 완료 (병합 전). 자동 테스트 56개 통과(AI 25 · Django 26 · 프론트 5), 세 서버 연동 확인. 감정 분석은 Ollama `gemma4:12b` 사용.
+**아직 확인하지 않은 것**: 브라우저에서의 화면 조작(차트 렌더링 포함), transformers 백엔드, PostgreSQL 연결, 화면에서 Ollama 분석 흐름 전체. 자세한 내용은 [검증 체크리스트](Docs/vaildates/VALIDATION_CHECKLIST.md).
 
 > Reflex의 기본 백엔드 포트는 8000이라 Django와 충돌한다. 그래서 [frontend/rxconfig.py](frontend/rxconfig.py)에서 8001로 분리했다.
 
@@ -81,7 +81,7 @@ CLAUDE.md                       # 인수인계 문서를 가리키기만 한다
 ## 테스트
 
 ```powershell
-cd ai_server; python -m pytest        # 13개 (pip install pytest 필요)
+cd ai_server; python -m pytest        # 25개 (pip install pytest 필요, 실제 LLM 호출 없음)
 cd backend;   python manage.py test   # 26개
 cd frontend;  python -m pytest tests  # 5개
 ```
@@ -106,7 +106,17 @@ cd frontend;  python -m pytest tests  # 5개
 
 ## 감정 분석
 
-기본 백엔드는 한국어 키워드 사전 방식(`EMOTION_BACKEND=lexicon`)이라 모델 다운로드 없이 바로 동작한다.
+**Ollama `gemma4:12b`** (로컬 LLM)를 사용한다. 먼저 Ollama 가 실행 중이고 모델이 받아져 있어야 한다.
+
+```powershell
+ollama list                  # gemma4:12b 가 보여야 한다
+ollama pull gemma4:12b       # 없을 때만 (약 7.6GB)
+```
+
+설정은 `ai_server/.env` (`EMOTION_BACKEND=ollama`, `OLLAMA_URL`, `OLLAMA_MODEL`, `OLLAMA_TIMEOUT` …)에 있고 예시는 `.env.example` 이다.
+첫 호출은 모델을 메모리에 올리느라 15초 안팎 걸리고(이후 4~9초), 그래서 Django `AI_SERVER_TIMEOUT=90`, 프론트 `MOOD_DIARY_API_TIMEOUT=120` 으로 설정한다. Ollama 가 꺼져 있으면 일기는 저장되되 `neutral / 0.5`(fallback)로 기록된다.
+
+Ollama 를 쓰지 않을 때는 `EMOTION_BACKEND=lexicon` (한국어 키워드 사전, 의존성·다운로드 없음)으로 바꾼다.
 결과는 긍정/부정/중립 + 세부 감정 5종(기쁨·슬픔·분노·불안·평온)이며, 트렌드의 "감정 지수"는 긍정 `+score`, 부정 `-score`, 중립 `0`으로 환산한 값이다(−1 ~ +1).
 
 Hugging Face 모델을 쓰려면 `ai_server/requirements.txt`의 `transformers`, `torch` 주석을 풀어 설치하고 `EMOTION_BACKEND=transformers`로 지정한다.

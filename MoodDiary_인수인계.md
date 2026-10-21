@@ -23,7 +23,7 @@
 | Backend | Django + DRF | 사용자 인증, 일기 CRUD, 데이터 저장 |
 | AI Server | Flask | 감정 분석 모델 호출 및 결과 반환 |
 | Database | PostgreSQL (또는 SQLite) | 일기 및 분석 결과 저장 |
-| AI Model | Hugging Face Transformers / OpenAI | 감정 분류 (긍정/부정/중립 + 세부 감정) |
+| AI Model | **Ollama `gemma4:12b`** (로컬 LLM) — 대체: 키워드 사전(lexicon), Hugging Face | 감정 분류 (긍정/부정/중립 + 세부 감정) |
 
 ### 아키텍처
 

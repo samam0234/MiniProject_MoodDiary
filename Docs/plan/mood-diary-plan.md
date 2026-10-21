@@ -23,7 +23,7 @@
 | Backend | Django + Django REST Framework | 사용자 인증, 일기 CRUD, 데이터 저장 |
 | AI Server | Flask | 감정 분석 모델 호출 및 결과 반환 |
 | Database | PostgreSQL (또는 SQLite for mini) | 일기 및 분석 결과 저장 |
-| AI Model | Hugging Face Transformers (또는 OpenAI API) | 감정 분류 (긍정/부정/중립 + 세부 감정) |
+| AI Model | **Ollama `gemma4:12b`** (로컬 LLM, v1.1 에서 확정) / 대체: 키워드 사전, Hugging Face | 감정 분류 (긍정/부정/중립 + 세부 감정) |
 
 ## 3. 주요 기능
 
@@ -68,7 +68,7 @@
 - emotion_label (positive/negative/neutral)
 - emotion_score (0.0 ~ 1.0) — label 에 대한 확신도
 - detailed_emotions (JSON: joy, sadness, anger, anxiety, calm)
-- **추가**: entry_date(일기 날짜, 트렌드 집계 기준), updated_at, ai_message, analysis_source(lexicon/transformers/fallback)
+- **추가**: entry_date(일기 날짜, 트렌드 집계 기준), updated_at, ai_message, analysis_source(ollama/lexicon/transformers/fallback)
 
 ### User
 - `AbstractUser` 를 상속한 `accounts.User` 사용 (구현 완료)
@@ -142,7 +142,7 @@ mood-diary/
 |------|------|
 | 회원가입 / 로그인 (JWT) | ✅ 완료 |
 | 일기 작성·목록·상세 (+수정·삭제) | ✅ 완료 |
-| 감정 분석 (긍정/부정/중립 + 세부 5종) | ✅ 완료 (키워드 사전 방식) |
+| 감정 분석 (긍정/부정/중립 + 세부 5종) | ✅ 완료 — Ollama gemma4:12b 실제 호출 확인, 키워드 사전은 대체 엔진 |
 | 감정 트렌드 7일/30일 (Reflex 차트) | ✅ 데이터·빌드 확인, ⬜ 브라우저 렌더링 미확인 |
 | AI 서버 장애 fallback (neutral, 0.5) | ✅ 완료 |
 | 격려 메시지 | ✅ 간이 구현 |
@@ -153,7 +153,7 @@ mood-diary/
 ### 계획 대비 변경점
 
 1. **Reflex 내부 백엔드 포트 8001**: Reflex 기본 백엔드가 8000 이라 Django 와 충돌해 분리했다.
-2. **감정 분석 방식**: 외부 모델 대신 의존성 없는 한국어 키워드 사전을 기본으로 했다(오프라인 즉시 실행). 모델 교체는 `EMOTION_BACKEND` 로 가능.
+2. **감정 분석 방식**: 로컬 Ollama `gemma4:12b` 를 사용한다(JSON 스키마 출력, 외부 API 키 불필요). 모델 로딩 때문에 첫 호출이 약 15초 걸려 AI 서버 90초 / 프론트 120초 timeout 을 `.env` 로 둔다. Ollama 가 없을 때를 위해 의존성 없는 키워드 사전(`EMOTION_BACKEND=lexicon`)을 대체 엔진으로 유지한다.
 3. **Diary 필드 추가**: `entry_date`, `updated_at`, `ai_message`, `analysis_source`.
 4. **감정 지수 정의**: 트렌드는 positive `+score`, negative `-score`, neutral `0` 의 일별 평균(−1~+1).
 5. **API 추가**: 수정·삭제, `auth/refresh`, `auth/me`, 목록 페이지네이션.

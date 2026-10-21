@@ -7,7 +7,7 @@
 
 | 대상 | 명령 | 결과 |
 |------|------|------|
-| AI 서버 | `python -m pytest` | ✅ 13 passed |
+| AI 서버 | `python -m pytest` | ✅ 25 passed (lexicon 13 + ollama mock 12) |
 | Django | `python manage.py test` | ✅ 26 passed (AI 호출은 mock) |
 | Reflex view_models | `python -m pytest tests` | ✅ 5 passed |
 
@@ -17,7 +17,10 @@
 |------|------|------|
 | 회원가입 / 로그인 (Django) | ✅ | 테스트 + 실서버 호출 |
 | 일기 작성 (제목·내용·날짜) | ✅ | 테스트 + 실서버 호출 |
-| 감정 분석 (긍정/부정/중립 + 세부 감정) | ✅ | 실제 AI 서버와 연동해 3건 작성 |
+| 감정 분석 (긍정/부정/중립 + 세부 감정) | ✅ | lexicon 으로 실서버 연동 3건 작성 |
+| **Ollama gemma4:12b 실제 호출** | ✅ | AI 서버 4건(긍정/부정/평범/인젝션 문장) + Django `analyze_text` 검증 통과, 첫 호출 ~14s · 이후 4~9s |
+| Ollama 로 화면(Reflex)에서 일기 저장 | ⬜ | 브라우저 미확인 |
+| Ollama 중단 시 fallback | ✅ | mock 테스트 (실제 중단 상태 재현은 미확인) |
 | 일기 목록 / 상세 | ✅ | 테스트 + 실서버 호출 |
 | 감정 트렌드 7일/30일 데이터 | ✅ | 테스트 + 실서버 호출 |
 | 트렌드 **차트 렌더링** (Reflex) | ⬜ | 컴파일/빌드만 확인, 브라우저 미확인 |
@@ -47,13 +50,15 @@
 
 - ⬜ 브라우저 UI 전체 흐름 (특히 차트, 삭제 확인 창, 토큰 만료 후 재로그인 이동)
 - ⬜ `EMOTION_BACKEND=transformers` (코드만 작성, 모델 미설치)
+- ⬜ Ollama 로 일기 저장 → 상세 화면까지 브라우저 확인, 동시 요청 시 응답 지연
 - ⬜ PostgreSQL 연결 (`docker compose up -d db` + `DB_ENGINE=postgres`)
 - ⬜ 모바일/좁은 화면 레이아웃
 - ⬜ `DJANGO_DEBUG=false` 배포 설정 (`Docs/web_management/PRE_DEPLOY_CHECKLIST.md` 참고)
 
 ## 6. 알려진 한계
 
-- 키워드 사전 방식이라 부정문·반어를 구분하지 못한다.
+- LLM 점수는 보정된 확률이 아니라 모델이 매긴 강도이며 호출마다 소폭 달라질 수 있다. 첫 호출은 모델 로딩으로 느리다.
+- (lexicon 대체 엔진) 키워드 사전 방식이라 부정문·반어를 구분하지 못한다.
 - 로그아웃해도 서버에서 refresh 토큰을 무효화하지 않는다 (만료까지 유효).
 - 로그인 시도 횟수 제한, 이메일 인증, 비밀번호 찾기 없음.
 - 일기 목록은 프론트에서 최대 100건만 불러온다 (페이지 이동 UI 없음).

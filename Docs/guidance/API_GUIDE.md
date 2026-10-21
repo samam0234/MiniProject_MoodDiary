@@ -55,7 +55,7 @@
   "emotion_score": 0.77,                // label 에 대한 확신도 0~1
   "detailed_emotions": {"joy": 1.0, "sadness": 0.0, "anger": 0.0, "anxiety": 0.0, "calm": 0.0},
   "ai_message": "기분 좋은 하루였네요! ...",
-  "analysis_source": "lexicon"          // lexicon | transformers | fallback
+  "analysis_source": "ollama"           // ollama | lexicon | transformers | fallback
 }
 ```
 
@@ -96,7 +96,7 @@ AI 서버가 장애여도 저장은 성공하며 `emotion_label="neutral"`, `emo
 
 | Method | Endpoint | 설명 |
 |--------|----------|------|
-| GET | `/health` | `{"status": "ok", "backend": "lexicon"}` |
+| GET | `/health` | `{"status": "ok", "backend": "ollama", "model": "gemma4:12b"}` |
 | POST | `/analyze` | `{"text": "..."}` → 분석 결과 |
 
 `/analyze` 응답 `data`: `label`, `score`, `sentiment_scores`(positive/negative/neutral), `detailed_emotions`, `message`, `source`.
