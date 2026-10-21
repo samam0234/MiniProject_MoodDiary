@@ -1,0 +1,25 @@
+name: mood-diary
+
+# 개발용 PostgreSQL. 기본 개발은 SQLite 이므로 필요할 때만 사용한다.
+#   docker compose up -d db
+# 이후 backend/.env 에 DB_ENGINE=postgres 와 POSTGRES_* 값을 맞춰 준다.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mood_diary}
+      POSTGRES_USER: ${POSTGRES_USER:-mood_diary}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - mood_diary_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mood_diary_pgdata:
