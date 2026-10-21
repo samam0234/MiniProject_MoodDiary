@@ -2,7 +2,9 @@
 
 **프로젝트명**: MoodDiary (AI Emotion Analysis Diary)  
 **작성일**: 2026-10-22  
-**버전**: v1.0  
+**수정일**: 2026-10-22 (구현 결과 반영)  
+**버전**: v1.1  
+> v1.0 은 `mood-diary-plan.docx` 로 보존되어 있으며, 이 문서(md)가 최신이다. 변경 사항은 §11 참고.  
 
 ---
 
@@ -38,7 +40,7 @@
    - 최근 7일 / 30일 감정 변화 차트 (Reflex 차트)
 
 ### 3.2 확장 기능 (선택)
-- AI 격려 메시지 / 조언 생성
+- AI 격려 메시지 / 조언 생성 — **구현됨(간이)**: 지배 감정별 고정 문구를 `ai_message` 로 제공 (LLM 생성은 아님)
 - 일기 검색 (키워드 + 감정 필터)
 - 월간 감정 리포트 PDF 내보내기
 - 태그 기능
@@ -64,11 +66,12 @@
 ### Diary
 - id, user_id, title, content, created_at
 - emotion_label (positive/negative/neutral)
-- emotion_score (0.0 ~ 1.0)
-- detailed_emotions (JSON)
+- emotion_score (0.0 ~ 1.0) — label 에 대한 확신도
+- detailed_emotions (JSON: joy, sadness, anger, anxiety, calm)
+- **추가**: entry_date(일기 날짜, 트렌드 집계 기준), updated_at, ai_message, analysis_source(lexicon/transformers/fallback)
 
 ### User
-- Django 기본 User 모델 확장 또는 AbstractUser
+- `AbstractUser` 를 상속한 `accounts.User` 사용 (구현 완료)
 
 ## 6. API 설계 (예시)
 
@@ -79,8 +82,13 @@
 | GET | /api/diaries | 일기 목록 |
 | POST | /api/diaries | 일기 작성 + 분석 |
 | GET | /api/diaries/{id} | 일기 상세 |
-| GET | /api/emotions/trend | 감정 트렌드 데이터 |
+| PATCH/PUT | /api/diaries/{id} | 일기 수정 (본문 변경 시 재분석) — 추가 |
+| DELETE | /api/diaries/{id} | 일기 삭제 — 추가 |
+| GET | /api/emotions/trend?days=7 | 감정 트렌드 데이터 |
+| POST | /api/auth/refresh | access 토큰 재발급 — 추가 |
+| GET | /api/auth/me | 현재 사용자 — 추가 |
 
+응답은 `{"success": bool, "data": ..., "error": ...}` 로 통일. 상세는 `Docs/guidance/API_GUIDE.md`.
 ## 7. 개발 일정 (예상)
 
 | 단계 | 내용 | 기간 |
@@ -106,7 +114,9 @@ mood-diary/
 ├── ai_server/         # Flask
 │   ├── app.py
 │   └── requirements.txt
-├── docker-compose.yml (선택)
+├── Docs/              # plan, Architecture, branchs, find_debug, guidance, trainings, repeater, vaildates, web_management
+├── docker-compose.yml # PostgreSQL (선택)
+├── MoodDiary_인수인계.md  # 작업 규칙 SSOT
 └── README.md
 ```
 
@@ -124,4 +134,32 @@ mood-diary/
 
 ---
 
-**다음 단계**: 이 계획서 기반으로 프로젝트 스켈레톤 생성 및 각 서버 코드 작성 시작
+## 11. 구현 현황 (v1.1)
+
+브랜치 `feature/mood-diary-mvp` 에서 MVP 를 구현했다.
+
+| 항목 | 상태 |
+|------|------|
+| 회원가입 / 로그인 (JWT) | ✅ 완료 |
+| 일기 작성·목록·상세 (+수정·삭제) | ✅ 완료 |
+| 감정 분석 (긍정/부정/중립 + 세부 5종) | ✅ 완료 (키워드 사전 방식) |
+| 감정 트렌드 7일/30일 (Reflex 차트) | ✅ 데이터·빌드 확인, ⬜ 브라우저 렌더링 미확인 |
+| AI 서버 장애 fallback (neutral, 0.5) | ✅ 완료 |
+| 격려 메시지 | ✅ 간이 구현 |
+| 일기 검색, PDF 리포트, 태그 | ⬜ 미구현 |
+| Hugging Face 모델 연동 | ⬜ 코드만 작성, 미검증 |
+| docker-compose (PostgreSQL) | 파일 작성, 문법 검증만 |
+
+### 계획 대비 변경점
+
+1. **Reflex 내부 백엔드 포트 8001**: Reflex 기본 백엔드가 8000 이라 Django 와 충돌해 분리했다.
+2. **감정 분석 방식**: 외부 모델 대신 의존성 없는 한국어 키워드 사전을 기본으로 했다(오프라인 즉시 실행). 모델 교체는 `EMOTION_BACKEND` 로 가능.
+3. **Diary 필드 추가**: `entry_date`, `updated_at`, `ai_message`, `analysis_source`.
+4. **감정 지수 정의**: 트렌드는 positive `+score`, negative `-score`, neutral `0` 의 일별 평균(−1~+1).
+5. **API 추가**: 수정·삭제, `auth/refresh`, `auth/me`, 목록 페이지네이션.
+6. **Reflex ↔ Django 호출은 서버 측**: 브라우저 CORS 는 개입하지 않는다(설정은 규칙대로 유지).
+
+### 일정 (실적)
+계획 약 7~8일 대비 하루 세션에서 MVP 구현·테스트까지 진행. 남은 일: 브라우저 수동 검증, 확장 기능, 배포 준비.
+
+**다음 단계**: 브라우저 수동 검증 → 확장 기능(검색·리포트) 선택 → 병합(사용자 지시 시)

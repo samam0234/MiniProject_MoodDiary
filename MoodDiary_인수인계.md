@@ -2,7 +2,8 @@
 
 **프로젝트명**: MoodDiary (AI Emotion Analysis Diary)  
 **작성일**: 2026-10-22  
-**용도**: 모든 에이전트(.Agents, .Claude, .Codex, .Grok, Gemini, .Antigravity, .Cursor, .Manus 등) 공통 인수인계  
+**용도**: 모든 에이전트(.Agents, .Claude, .Codex, .Grok, .Gemini, .Antigravity, .Cursor, .Manus 등) 공통 인수인계  
+**에이전트 폴더**: 각 폴더의 `HANDOVER.md` 는 이 문서를 가리키는 안내만 담는다. 규칙은 여기에만 쓴다.  
 **원칙**: 이 문서가 규칙의 단일 출처(SSOT) 역할을 합니다. 다른 곳에 규칙을 중복 작성하지 마세요.
 
 ---
@@ -75,7 +76,8 @@
 
 ## 3. 권장 Docs 폴더 구조
 
-프로젝트 루트에 `Docs/` 폴더를 만들고 아래 하위 폴더를 사용하세요.
+프로젝트 루트에 `Docs/` 폴더를 만들고 아래 하위 폴더를 사용하세요. (현재 문서 목록: `Docs/README.md`)
+새 문서의 파일명은 영문으로 작성한다.
 
 | 폴더 | 용도 |
 |------|------|
@@ -95,13 +97,17 @@
 
 | 구분 | 기술 | 기본 포트 | 의존성 파일 | 실행 명령 예시 |
 |------|------|-----------|-------------|----------------|
-| Frontend | Reflex | 3000 | `frontend/requirements.txt` | `reflex run` |
+| Frontend | Reflex | 3000 (Reflex 내부 백엔드 **8001**) | `frontend/requirements.txt` | `reflex run` |
 | Backend | Django + DRF | 8000 | `backend/requirements.txt` | `python manage.py runserver` |
 | AI Server | Flask | 5000 | `ai_server/requirements.txt` | `flask run` |
 | Database | PostgreSQL | 5432 | `docker-compose.yml` | - |
 | Docker (선택) | - | - | `docker-compose.yml` | 프로젝트명: `mood-diary` |
 
-- 환경 변수는 `.env`로 관리, 민감 정보는 절대 커밋하지 않음
+- 환경 변수는 `.env`로 관리, 민감 정보는 절대 커밋하지 않음 (각 폴더의 `.env.example` 참고)
+- Reflex 기본 백엔드 포트(8000)는 Django 와 충돌하므로 `frontend/rxconfig.py` 에서 8001 로 분리했다.
+- 의존성은 프로젝트 루트 `.venv` 에 설치한다. 터미널마다 활성화 후 실행 (자세한 내용: `Docs/guidance/RUN_GUIDE.md`)
+- `requirements.txt` 에는 한글 주석을 쓰지 않는다 (pip 가 cp949 로 읽다가 실패)
+- `reflex run` 종료 시 프로세스 트리 전체를 종료한다 (`taskkill /T /F`). 자식 워커가 8001 을 계속 점유한다.
 - 개발 시 SQLite 사용 가능
 
 ---
@@ -205,13 +211,19 @@
 
 ---
 
-## 9. 다음 단계
+## 9. 진행 상황 / 다음 단계
 
-1. 프로젝트 스켈레톤 생성 (`frontend/`, `backend/`, `ai_server/`)
-2. Django Backend (인증 + Diary CRUD)
-3. Flask AI Server
-4. Reflex Frontend
-5. 통합 테스트 + 차트 시각화
+**완료** (`feature/mood-diary-mvp`, 병합 전)
+1. ✅ 프로젝트 스켈레톤 (`frontend/`, `backend/`, `ai_server/`, `Docs/`, `docker-compose.yml`)
+2. ✅ Django Backend (인증 + Diary CRUD + 트렌드)
+3. ✅ Flask AI Server
+4. ✅ Reflex Frontend
+5. ✅ 자동 테스트 (AI 13 · Django 26 · 프론트 5) + 서버 연동 확인
+
+**남은 일**
+1. ⬜ 브라우저에서 화면 수동 검증 (차트 렌더링 포함) — `Docs/vaildates/VALIDATION_CHECKLIST.md`
+2. ⬜ 확장 기능 (검색, 월간 리포트, 태그) — 선택
+3. ⬜ 병합 (사용자 지시 시에만, `--no-ff`, 병합 기록 문서 일괄 작성)
 
 ---
 
