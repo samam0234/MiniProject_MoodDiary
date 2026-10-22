@@ -12,6 +12,7 @@ from .view_models import (
     DiaryItem,
     TrendPoint,
     describe_average,
+    describe_trend,
     to_diary_item,
     to_trend_points,
 )
@@ -38,6 +39,7 @@ class AppState(rx.State):
     trend_points: list[TrendPoint] = []
     trend_entries: int = 0
     trend_average_text: str = ""
+    trend_headline: str = ""
     trend_positive: int = 0
     trend_negative: int = 0
     trend_neutral: int = 0
@@ -46,6 +48,22 @@ class AppState(rx.State):
     @rx.var
     def is_logged_in(self) -> bool:
         return bool(self.access_token)
+
+    @rx.var
+    def user_initial(self) -> str:
+        return self.username[:1].upper() if self.username else ""
+
+    @rx.var
+    def nav_section(self) -> str:
+        """현재 경로가 속한 네비게이션 항목 (활성 링크 표시용)."""
+        path = self.router.page.path
+        if path.startswith("/diaries/new"):
+            return "new"
+        if path.startswith("/diaries"):
+            return "list"
+        if path.startswith("/trend"):
+            return "trend"
+        return ""
 
     @rx.var
     def has_diaries(self) -> bool:
@@ -260,6 +278,7 @@ class AppState(rx.State):
         self.trend_positive = summary["label_counts"]["positive"]
         self.trend_negative = summary["label_counts"]["negative"]
         self.trend_neutral = summary["label_counts"]["neutral"]
+        self.trend_headline = describe_trend(summary["label_counts"], self.trend_days)
 
     @rx.event
     def select_trend_days(self, value: str):

@@ -29,3 +29,15 @@
 
 - 확신도(score)와 감정 방향(−1~+1)은 다른 값이다. 시계열로 합치려면 부호를 붙여 환산해야 한다.
 - 근거가 적을 때 확신도가 1.0 이 되지 않도록 prior(가상 근거)를 둔다.
+
+## UI 스타일링 (2026-10-22, 디자인 작업에서 확인)
+
+- **순수 CSS + `class_name`**: `rx.App(stylesheets=[폰트 URL, "/mood.css"])` 로 `assets/mood.css` 를 불러오고, 컴포넌트는 `rx.el.div(..., class_name="md-card")` 처럼 쓴다. 외부 UI 키트가 필요 없다.
+- **State 값으로 클래스 조합**: `class_name=f"md-card entry entry-{item['label']}"` 처럼 Var 를 f-string 에 넣으면 JS 템플릿 문자열이 되어 foreach 안에서도 동작한다. 조건부 클래스는 `rx.cond(cond, "a active", "a")`.
+- **인라인 스타일에 Var**: `style={"width": f"{bar['pct']}%"}` 로 막대 너비 같은 동적 값을 준다.
+- **네이티브 요소와 `rx.form`**: `rx.el.input(name=...)`, `rx.el.textarea(name=...)` 도 `rx.form(on_submit=...)` 의 `form_data` 에 담긴다. (Radix 입력창 대신 직접 스타일링할 때 유용)
+- **활성 메뉴 표시**: `self.router.page.path` 로 계산 변수(`nav_section`)를 만들어 링크 클래스에 사용한다.
+- **head 설정**: `rx.App(head_components=[rx.el.link(rel="icon", href="/favicon.svg"), ...])`.
+- **Radix 루트 배경**: `.radix-themes` 가 `--color-background` 로 배경을 덮으므로 사이트 배경을 쓰려면 투명으로 덮어쓴다.
+- **개발 서버 주의**: `rx.icon`(lucide)을 여러 개 쓰면 Vite 가 `504 Outdated Optimize Dep` 로 화면이 깨졌다 → 이모지 사용. `assets/` 변경은 `.py` 갱신 때 복사된다.
+- **브라우저 검증**: Playwright 는 `pip install playwright` 만 하고 `launch(channel="msedge")` 로 설치된 Edge 를 쓰면 브라우저 다운로드가 필요 없다. 전체 페이지 스크린샷(`full_page=True`)을 직접 보며 디자인을 다듬는 것이 가장 빨랐다.

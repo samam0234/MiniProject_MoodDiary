@@ -5,7 +5,8 @@ UI 와 상태 관리. 프론트 **3000**, Reflex 내부 백엔드 **8001** (Djan
 ```powershell
 # 프로젝트 루트의 .venv 활성화 후
 reflex run                    # http://localhost:3000
-python -m pytest tests        # 5개
+python -m pytest tests        # 8개
+python e2e/ui_flow.py          # 브라우저 클릭 흐름 점검 (세 서버 실행 + pip install playwright)
 ```
 
 | 경로 | 역할 |
@@ -16,7 +17,10 @@ python -m pytest tests        # 5개
 | `mood_diary/components.py` | 네비게이션, 에러 콜아웃, 로딩, 감정 막대, 배지 |
 | `mood_diary/state.py` | `AppState`: 토큰(LocalStorage), 이벤트 핸들러, 401 시 refresh 재시도 |
 | `mood_diary/api.py` | Django 호출(`httpx`), 응답을 `ApiResult` 로 변환 |
-| `mood_diary/view_models.py` | 응답 → 화면용 구조 변환 (Reflex 비의존) |
+| `mood_diary/view_models.py` | 응답 → 화면용 구조 변환 (이모지·날짜 조각·날씨 라벨 포함, Reflex 비의존) |
+| `assets/mood.css` | 디자인 시스템 "마음 날씨" (토큰, 카드, 줄 노트, 반응형) |
+| `assets/favicon.svg` | 파비콘 |
+| `e2e/ui_flow.py` | Playwright 로 로그인~삭제~로그아웃 흐름을 눌러 보는 스모크 테스트 |
 
 | 페이지 | 경로 |
 |--------|------|
@@ -26,5 +30,6 @@ python -m pytest tests        # 5개
 
 - Django 는 서버 측에서 호출하므로 브라우저 CORS 와 무관하다. 주소는 `MOOD_DIARY_API_URL`(기본 http://localhost:8000).
 - 일기 저장처럼 AI 분석이 걸리는 작업은 `is_saving` 로딩 상태와 안내 문구를 표시한다.
-- 빌드 산출물(`.web/`, `.states/`)은 커밋하지 않는다.
+- 디자인 컨셉·토큰·작업 규칙: [Docs/guidance/DESIGN_GUIDE.md](../Docs/guidance/DESIGN_GUIDE.md). `rx.icon` 대신 이모지를 쓴다(Vite 개발 서버 504 이슈).
+- 빌드 산출물(`.web/`, `.states/`)과 `e2e/shots/` 는 커밋하지 않는다.
 - 학습 메모: [Docs/trainings/REFLEX_NOTES.md](../Docs/trainings/REFLEX_NOTES.md)
