@@ -37,4 +37,13 @@
 - 임시 서버를 5055 에 띄웠더니 다른 프로그램(`innorixes`)이 쓰는 포트라 404 응답이 왔다 → 5077 로 변경. 포트를 쓰기 전 점유 여부 확인.
 - PowerShell `Invoke-RestMethod` 는 charset 없는 JSON 응답의 한글을 깨뜨려 보여준다(서버 응답은 정상 UTF-8). 한글 확인은 Python 으로 한다.
 
-## 8. Reflex 종료 후 포트 8001 이 계속 점유됨 → `Docs/repeater/261022_port_conflict.md` 참고
+## 8. UI 디자인 작업 중 문제 (2026-10-22)
+- **`504 (Outdated Optimize Dep)` 로 화면 전체가 `Application Error`**: `rx.icon`(lucide) 여러 개를 쓰자 Vite 개발 서버가 아이콘 모듈 최적화를 계속 실패했다(요청마다 다른 아이콘, 재시도해도 동일, `curl` 로는 200). 사용자가 실행 중인 서버를 재시작하지 않고 **아이콘을 이모지/기호로 대체**해 해결. → 규칙: 아이콘은 이모지.
+- **CSS 수정이 반영되지 않음**: `assets/mood.css` 만 고치면 `.web/public` 으로 복사되지 않았다(서빙본 확인). `.py` 파일을 갱신하면 복사된다.
+- **배경이 흰색**: Radix 루트(`.radix-themes`)가 `--color-background` 로 body 배경을 덮었다 → 투명으로 덮어씀.
+- **줄 노트 글자가 줄선과 겹침**: textarea 위 패딩(8px)과 줄 무늬(32px 주기) 위상이 달랐다 → 패딩 16px + 줄 무늬 `background-position-y: 16px`.
+- **차트 y축 눈금 잘림/겹침**: `y_axis` 폭 34→44(세부 감정), 차트 `margin` 과 x축 `tick_margin` 추가.
+- **모바일**: 히어로 이모지가 글자를 가림, 상단 로그아웃이 줄바꿈, 목록 제목이 배지 때문에 어색하게 줄바꿈 → 각각 숨김/아바타만/배지를 제목 아래로.
+- 검증 도구: Playwright + 시스템 Edge(`channel="msedge"`, 브라우저 다운로드 불필요), 스크립트는 `frontend/e2e/ui_flow.py`.
+
+## 9. Reflex 종료 후 포트 8001 이 계속 점유됨 → `Docs/repeater/261022_port_conflict.md` 참고

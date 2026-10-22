@@ -8,7 +8,7 @@
 | `Architecture/` | 시스템·계층·데이터 흐름 | [ARCHITECTURE.md](Architecture/ARCHITECTURE.md) |
 | `branchs/` | 브랜치·커밋 기록 (커밋마다 1개) | [_TEMPLATE.md](branchs/_TEMPLATE.md), `YYMMDD_HHMM_id_이름_브랜치.md` |
 | `find_debug/` | 작업/실행 디버깅 일일 기록 | [261022_debug_log.md](find_debug/261022_debug_log.md) |
-| `guidance/` | 기능·실행 가이드 | [RUN_GUIDE.md](guidance/RUN_GUIDE.md), [API_GUIDE.md](guidance/API_GUIDE.md) |
+| `guidance/` | 기능·실행 가이드 | [RUN_GUIDE.md](guidance/RUN_GUIDE.md), [API_GUIDE.md](guidance/API_GUIDE.md), [DESIGN_GUIDE.md](guidance/DESIGN_GUIDE.md) |
 | `trainings/` | 학습·연구 정리 | [REFLEX_NOTES.md](trainings/REFLEX_NOTES.md) |
 | `repeater/` | 서버 연결·인프라 장애와 해결 | [261022_port_conflict.md](repeater/261022_port_conflict.md) |
 | `vaildates/` | 검증·체크리스트 | [VALIDATION_CHECKLIST.md](vaildates/VALIDATION_CHECKLIST.md) |

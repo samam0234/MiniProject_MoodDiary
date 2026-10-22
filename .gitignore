@@ -21,3 +21,6 @@ db.sqlite3
 .states/
 frontend/assets/external/
 reflex.lock
+
+# Playwright 점검 결과 스크린샷
+frontend/e2e/shots/

@@ -17,8 +17,9 @@
 
 ## 현재 상태
 
-`feature/mood-diary-mvp` 에서 MVP 구현 완료 (병합 전). 자동 테스트 56개 통과(AI 25 · Django 26 · 프론트 5), 세 서버 연동 확인. 감정 분석은 Ollama `gemma4:12b` 사용.
-**아직 확인하지 않은 것**: 브라우저에서의 화면 조작(차트 렌더링 포함), transformers 백엔드, PostgreSQL 연결, 화면에서 Ollama 분석 흐름 전체. 자세한 내용은 [검증 체크리스트](Docs/vaildates/VALIDATION_CHECKLIST.md).
+`feature/mood-diary-mvp` 에서 MVP 구현 완료 (병합 전). 자동 테스트 59개 통과(AI 25 · Django 26 · 프론트 8), 세 서버 연동 확인. 감정 분석은 Ollama `gemma4:12b` 사용.
+UI 는 "마음 날씨" 컨셉으로 디자인했고(`feature/ui-design`), 실제 브라우저(Edge)에서 로그인 → 작성 → 차트 → 삭제 → 로그아웃 흐름을 확인했다.
+**아직 확인하지 않은 것**: Edge 외 브라우저·실기기, 색 대비 등 접근성 점검, transformers 백엔드, PostgreSQL 연결, 화면에서 Ollama 분석 결과 표시. 자세한 내용은 [검증 체크리스트](Docs/vaildates/VALIDATION_CHECKLIST.md).
 
 > Reflex의 기본 백엔드 포트는 8000이라 Django와 충돌한다. 그래서 [frontend/rxconfig.py](frontend/rxconfig.py)에서 8001로 분리했다.
 
@@ -74,6 +75,7 @@ CLAUDE.md                       # 인수인계 문서를 가리키기만 한다
 | [Docs/Architecture/ARCHITECTURE.md](Docs/Architecture/ARCHITECTURE.md) | 구성, 데이터 흐름, 인증, 데이터 모델, 감정 지수 |
 | [Docs/guidance/RUN_GUIDE.md](Docs/guidance/RUN_GUIDE.md) | 실행·포트·문제 해결 |
 | [Docs/guidance/API_GUIDE.md](Docs/guidance/API_GUIDE.md) | API 요청/응답 예시 |
+| [Docs/guidance/DESIGN_GUIDE.md](Docs/guidance/DESIGN_GUIDE.md) | 디자인 컨셉 "마음 날씨", 토큰, 컴포넌트, 작업 규칙 |
 | [Docs/vaildates/VALIDATION_CHECKLIST.md](Docs/vaildates/VALIDATION_CHECKLIST.md) | 검증 현황과 미검증 항목 |
 | [Docs/find_debug/](Docs/find_debug/261022_debug_log.md) · [Docs/repeater/](Docs/repeater/261022_port_conflict.md) | 디버깅·포트 이슈 기록 |
 | [Docs/web_management/PRE_DEPLOY_CHECKLIST.md](Docs/web_management/PRE_DEPLOY_CHECKLIST.md) | 배포 전 점검 |
@@ -83,7 +85,8 @@ CLAUDE.md                       # 인수인계 문서를 가리키기만 한다
 ```powershell
 cd ai_server; python -m pytest        # 25개 (pip install pytest 필요, 실제 LLM 호출 없음)
 cd backend;   python manage.py test   # 26개
-cd frontend;  python -m pytest tests  # 5개
+cd frontend;  python -m pytest tests  # 8개
+python frontend/e2e/ui_flow.py        # 브라우저 클릭 흐름 (세 서버 실행 + pip install playwright 필요)
 ```
 
 ## API (모든 응답: `{"success": bool, "data": ..., "error": ...}`)

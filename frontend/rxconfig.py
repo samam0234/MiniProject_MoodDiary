@@ -6,7 +6,11 @@ config = rx.Config(
     frontend_port=3000,
     backend_port=8001,
     plugins=[
-        rx.plugins.RadixThemesPlugin(theme=rx.theme(accent_color="violet", radius="large")),
+        # 디자인 컨셉 "마음 날씨": 따뜻한 종이 톤은 assets/mood.css 에서 정의하고,
+        # Radix 컴포넌트(알림창 등)는 라이트 + 보라 포인트로 맞춘다.
+        rx.plugins.RadixThemesPlugin(
+            theme=rx.theme(appearance="light", accent_color="violet", gray_color="sand", radius="large")
+        ),
         rx.plugins.SitemapPlugin(),
     ],
 )
