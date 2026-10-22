@@ -48,3 +48,29 @@ def test_describe_average():
     assert describe_average(0.5).startswith("긍정적")
     assert describe_average(-0.5).startswith("부정적")
     assert describe_average(0.0).startswith("평온")
+
+
+def test_split_date():
+    from mood_diary.view_models import split_date
+
+    assert split_date("2026-10-22") == {
+        "long_date": "2026년 10월 22일 목요일", "day": "22", "month": "10월", "weekday": "목",
+    }
+    assert split_date("garbage")["day"] == ""  # 해석 불가 시 원문 유지
+
+
+def test_weather_fields():
+    sunny = to_diary_item(RAW)
+    assert (sunny["emoji"], sunny["weather"], sunny["label"]) == ("☀️", "맑음", "positive")
+    rainy = to_diary_item({**RAW, "emotion_label": "negative"})
+    assert (rainy["emoji"], rainy["weather"]) == ("🌧️", "비")
+    assert sunny["emotions"][0]["emoji"] == "😊"
+
+
+def test_describe_trend():
+    from mood_diary.view_models import describe_trend
+
+    assert describe_trend({"positive": 0, "negative": 0, "neutral": 0}, 7) == ""
+    assert "맑은 날" in describe_trend({"positive": 3, "negative": 1, "neutral": 1}, 7)
+    assert "비 오는 날" in describe_trend({"positive": 1, "negative": 4, "neutral": 1}, 30)
+    assert "맑은 날" in describe_trend({"positive": 2, "negative": 2, "neutral": 0}, 7)  # 동률은 긍정 우선
