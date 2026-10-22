@@ -84,6 +84,7 @@
 | GET | /api/diaries/{id} | 일기 상세 |
 | PATCH/PUT | /api/diaries/{id} | 일기 수정 (본문 변경 시 재분석) — 추가 |
 | DELETE | /api/diaries/{id} | 일기 삭제 — 추가 |
+| POST | /api/diaries/{id}/reanalyze | 저장된 일기 다시 분석 (AI 장애 시 기존 결과 유지) — 추가 |
 | GET | /api/emotions/trend?days=7 | 감정 트렌드 데이터 |
 | POST | /api/auth/refresh | access 토큰 재발급 — 추가 |
 | GET | /api/auth/me | 현재 사용자 — 추가 |
@@ -144,6 +145,7 @@ mood-diary/
 | 일기 작성·목록·상세 (+수정·삭제) | ✅ 완료 |
 | 감정 분석 (긍정/부정/중립 + 세부 5종) | ✅ 완료 — Ollama gemma4:12b 실제 호출 확인, 키워드 사전은 대체 엔진 |
 | 감정 트렌드 7일/30일 (Reflex 차트) | ✅ 데이터 확인, 브라우저(Edge)에서 차트 렌더링·전환 확인 |
+| 저장된 일기 "다시 분석하기" 버튼 | ✅ `feature/diary-reanalyze`: 상세 화면 버튼 + `POST /reanalyze`, 이전/이후 비교 안내, 장애 시 기존 결과 유지 |
 | UI 디자인 (컨셉 "마음 날씨") | ✅ `feature/ui-design`: 종이 일기장 톤, ☀️☁️🌧️ 날씨 배지, 줄 노트 입력, 모바일 대응 |
 | AI 서버 장애 fallback (neutral, 0.5) | ✅ 완료 |
 | 격려 메시지 | ✅ 간이 구현 |

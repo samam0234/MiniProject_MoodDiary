@@ -148,6 +148,72 @@ class DiaryApiTests(TestCase):
         self.assertFalse(Diary.objects.exists())
 
 
+AI_NEGATIVE = {
+    **AI_OK,
+    "data": {**AI_OK["data"], "label": "negative", "score": 0.9, "message": "힘내요",
+             "detailed_emotions": {"joy": 0.0, "sadness": 0.8, "anger": 0.0, "anxiety": 0.2, "calm": 0.0}},
+}
+
+
+class ReanalyzeApiTests(TestCase):
+    def setUp(self):
+        self.alice = User.objects.create_user("alice", password="Str0ng-pass!23")
+        self.bob = User.objects.create_user("bob", password="Str0ng-pass!23")
+        self.client = APIClient()
+        self.client.force_authenticate(self.alice)
+        self.diary = Diary.objects.create(
+            user=self.alice, title="오늘", content="행복했다", emotion_label="neutral", emotion_score=0.5,
+            detailed_emotions={"joy": 0.2, "sadness": 0.2, "anger": 0.2, "anxiety": 0.2, "calm": 0.2},
+            analysis_source="fallback",
+        )
+        self.url = f"/api/diaries/{self.diary.id}/reanalyze"
+
+    @mock.patch("diaries.services.requests.post", return_value=fake_response(AI_OK))
+    def test_reanalyze_updates_analysis_and_returns_previous(self, post):
+        res = self.client.post(self.url)
+        data = res.json()["data"]
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual((data["emotion_label"], data["emotion_score"], data["analysis_source"]), ("positive", 0.8, "lexicon"))
+        self.assertEqual(data["ai_message"], "좋은 하루!")
+        self.assertEqual(data["previous"], {"emotion_label": "neutral", "emotion_score": 0.5, "analysis_source": "fallback"})
+        self.diary.refresh_from_db()
+        self.assertEqual(self.diary.emotion_label, "positive")
+        self.assertEqual(post.call_args.kwargs["json"]["text"], "오늘\n행복했다")  # 저장된 제목/본문으로 분석
+
+    @mock.patch("diaries.services.requests.post", return_value=fake_response(AI_NEGATIVE))
+    def test_reanalyze_can_change_label(self, _post):
+        self.diary.emotion_label, self.diary.emotion_score = "positive", 0.9
+        self.diary.save()
+        res = self.client.post(self.url).json()["data"]
+        self.assertEqual((res["previous"]["emotion_label"], res["emotion_label"]), ("positive", "negative"))
+
+    @mock.patch("diaries.services.requests.post", side_effect=requests.ConnectionError)
+    def test_ai_outage_keeps_existing_analysis(self, _post):
+        self.diary.emotion_label, self.diary.emotion_score, self.diary.analysis_source = "positive", 0.77, "ollama"
+        self.diary.save()
+        res = self.client.post(self.url)
+        self.assertEqual(res.status_code, 503)
+        self.assertFalse(res.json()["success"])
+        self.assertIn("기존 분석 결과", res.json()["error"]["message"])
+        self.diary.refresh_from_db()
+        self.assertEqual((self.diary.emotion_label, self.diary.emotion_score, self.diary.analysis_source), ("positive", 0.77, "ollama"))
+
+    @mock.patch("diaries.services.requests.post", return_value=fake_response(AI_OK))
+    def test_other_users_diary_is_404(self, post):
+        self.client.force_authenticate(self.bob)
+        self.assertEqual(self.client.post(self.url).status_code, 404)
+        post.assert_not_called()  # 남의 일기는 AI 호출도 하지 않는다
+
+    def test_requires_auth(self):
+        self.assertEqual(APIClient().post(self.url).status_code, 401)
+
+    def test_get_not_allowed(self):
+        self.assertEqual(self.client.get(self.url).status_code, 405)
+
+    def test_unknown_diary_is_404(self):
+        self.assertEqual(self.client.post("/api/diaries/99999/reanalyze").status_code, 404)
+
+
 class TrendApiTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user("alice", password="Str0ng-pass!23")

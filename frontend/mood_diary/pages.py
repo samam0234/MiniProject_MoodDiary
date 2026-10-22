@@ -244,6 +244,16 @@ def delete_dialog() -> rx.Component:
     )
 
 
+def reanalyze_button() -> rx.Component:
+    return rx.el.button(
+        rx.cond(AppState.is_reanalyzing, thinking("AI가 다시 읽고 있어요…"), span("🔄 다시 분석하기")),
+        on_click=AppState.reanalyze_diary,
+        disabled=AppState.is_reanalyzing,
+        title="저장된 일기를 현재 AI 모델로 다시 분석해요",
+        class_name="btn btn-ghost btn-sm",
+    )
+
+
 def diary_detail_page() -> rx.Component:
     d = AppState.diary
     return page_layout(
@@ -271,7 +281,7 @@ def diary_detail_page() -> rx.Component:
                         d["is_fallback"],
                         div(
                             span("🔌"),
-                            span("AI 서버에 연결할 수 없어 기본값(중립 50%)으로 저장되었어요. 서버가 켜진 뒤 일기를 수정·저장하면 다시 분석돼요."),
+                            span("AI 서버에 연결할 수 없어 기본값(중립 50%)으로 저장되었어요. 서버가 켜진 뒤 아래 \"다시 분석하기\"를 눌러 주세요."),
                             class_name="notice warn",
                         ),
                         div(
@@ -285,7 +295,20 @@ def diary_detail_page() -> rx.Component:
                             class_name="md-stack",
                         ),
                     ),
-                    div(delete_dialog(), style={"display": "flex", "justifyContent": "flex-end"}),
+                    # 결과/오류 안내는 버튼 바로 위에 둔다 (긴 일기에서 아래로 스크롤해도 보이도록)
+                    rx.cond(
+                        AppState.reanalyze_notice != "",
+                        div(span("🔄"), span(AppState.reanalyze_notice), class_name="notice info", role="status"),
+                    ),
+                    rx.cond(
+                        AppState.reanalyze_error != "",
+                        div(span("⚠️"), span(AppState.reanalyze_error), class_name="notice error", role="alert"),
+                    ),
+                    div(
+                        reanalyze_button(),
+                        delete_dialog(),
+                        class_name="detail-actions",
+                    ),
                     class_name="md-stack",
                 ),
             ),

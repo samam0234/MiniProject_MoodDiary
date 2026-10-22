@@ -1,6 +1,6 @@
 # 검증 체크리스트
 
-**기준일**: 2026-10-22 · 브랜치 `feature/mood-diary-mvp`
+**기준일**: 2026-10-22 · 브랜치 `feature/diary-reanalyze`
 표기: ✅ 확인함 · ⬜ 아직 확인하지 않음 · ➖ 해당 없음
 
 ## 1. 자동 테스트
@@ -8,9 +8,9 @@
 | 대상 | 명령 | 결과 |
 |------|------|------|
 | AI 서버 | `python -m pytest` | ✅ 25 passed (lexicon 13 + ollama mock 12) |
-| Django | `python manage.py test` | ✅ 26 passed (AI 호출은 mock) |
-| Reflex view_models | `python -m pytest tests` | ✅ 8 passed |
-| **브라우저 클릭 흐름** | `python frontend/e2e/ui_flow.py` (Edge, 실서버) | ✅ 11/11 (아래 §2) |
+| Django | `python manage.py test` | ✅ 33 passed (AI 호출은 mock, 재분석 7개 포함) |
+| Reflex view_models | `python -m pytest tests` | ✅ 9 passed |
+| **브라우저 클릭 흐름** | `python frontend/e2e/ui_flow.py` (Edge, 실서버) | ✅ 13/13 (아래 §2) |
 
 ## 2. 기능 (MVP, 계획서 §3.1)
 
@@ -20,7 +20,10 @@
 | 일기 작성 (제목·내용·날짜) | ✅ | 테스트 + 실서버 호출 |
 | 감정 분석 (긍정/부정/중립 + 세부 감정) | ✅ | lexicon 으로 실서버 연동 3건 작성 |
 | **Ollama gemma4:12b 실제 호출** | ✅ | AI 서버 4건(긍정/부정/평범/인젝션 문장) + Django `analyze_text` 검증 통과, 첫 호출 ~14s · 이후 4~9s |
-| Ollama 로 화면(Reflex)에서 일기 저장 | ⬜ | 브라우저 미확인 |
+| Ollama 로 화면(Reflex)에서 일기 저장·분석 결과 표시 | ✅ | AI 서버를 ollama 모드로 재시작 후 e2e 로 작성→상세 확인 (`analysis_source=ollama`) |
+| **다시 분석하기** (화면) | ✅ | Ollama 로 실제 클릭: "다시 분석했어요 · 결과는 그대로예요 (☀️ 긍정 90%)" 안내, 날씨 카드 유지 |
+| 다시 분석 + AI 서버 중지 | ✅ | AI 서버를 내린 채 클릭 → 오류 안내(버튼 위), 화면·DB 의 기존 결과 유지, 버튼 재활성화 |
+| 다시 분석 API 권한/오류 | ✅ | 단위 테스트: 타인 일기 404(AI 미호출), 미인증 401, GET 405, 없는 일기 404, 장애 시 503 + 기존 값 유지 |
 | Ollama 중단 시 fallback | ✅ | mock 테스트 (실제 중단 상태 재현은 미확인) |
 | 일기 목록 / 상세 | ✅ | 테스트 + 실서버 호출 |
 | 감정 트렌드 7일/30일 데이터 | ✅ | 테스트 + 실서버 호출 |
@@ -28,7 +31,7 @@
 | 화면에서 로그인 실패/성공·작성·삭제·로그아웃 | ✅ | Playwright 로 실제 클릭 (콘솔 오류 0) |
 | 로그아웃 후 보호 페이지 접근 차단 | ✅ | `/diaries` 직접 접근 → `/login` |
 | 디자인(데스크톱 1280 / 모바일 390) | ✅ | 로그인·가입·목록·작성·상세(긍정/부정)·트렌드 스크린샷 확인 후 수정 2회 |
-| 화면 흐름 중 사용한 AI 엔진 | ➖ | 점검 시 AI 서버(5000)가 lexicon 모드 — Ollama 결과의 화면 표시는 별도 확인 필요 |
+| 화면 흐름 중 사용한 AI 엔진 | ✅ | 최신 e2e 는 Ollama(gemma4:12b) 모드 (이전 점검은 lexicon) |
 
 ## 3. 작업 시 확인 체크리스트 (인수인계 §8)
 
@@ -57,7 +60,7 @@
 - ⬜ 접근성: 색 대비, 키보드 이동, 스크린리더 (정량 점검 안 함)
 - ⬜ 다크 모드 (라이트로 고정)
 - ⬜ `EMOTION_BACKEND=transformers` (코드만 작성, 모델 미설치)
-- ⬜ Ollama 로 일기 저장 → 상세 화면에 분석 결과가 표시되는지(AI 서버를 ollama 모드로 재시작 후), 동시 요청 시 응답 지연
+- ⬜ 동시 요청 시 Ollama 응답 지연, 재분석 연타(버튼은 처리 중 비활성화되지만 부하 시험은 안 함)
 - ⬜ PostgreSQL 연결 (`docker compose up -d db` + `DB_ENGINE=postgres`)
 - ⬜ 모바일/좁은 화면 레이아웃
 - ⬜ `DJANGO_DEBUG=false` 배포 설정 (`Docs/web_management/PRE_DEPLOY_CHECKLIST.md` 참고)
