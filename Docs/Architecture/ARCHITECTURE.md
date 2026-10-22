@@ -51,6 +51,18 @@
 - **응답 구조 검증**: label 이 positive/negative/neutral 인지, score 가 0~1 인지, `detailed_emotions` 키가 정확히 5종인지 확인한다. 어긋나면 fallback 으로 처리해 DB 의 결과 구조를 항상 일관되게 유지한다.
 - 본문(제목/내용)이 바뀐 수정 요청에서만 재분석한다.
 
+### 2-1. 다시 분석 흐름
+
+```
+상세 화면 "다시 분석하기" → Reflex reanalyze_diary (is_reanalyzing=True)
+ → POST /api/diaries/{id}/reanalyze
+ → 저장된 "제목\n내용" 으로 analyze_text (신규 저장과 같은 경로)
+     ├ 성공 → 분석 필드 갱신, 응답에 previous(이전 결과) 포함 → 화면에 "☁️ 중립 50% → ☀️ 긍정 77%" 안내
+     └ fallback → 저장하지 않고 503 (기존 결과 유지) → 화면에 오류 안내, 버튼 재활성화
+```
+
+신규 저장·수정과 달리 장애 시 fallback 값을 저장하지 않는다. 사용자가 일부러 다시 요청한 작업이 좋은 기존 결과를 기본값으로 덮어쓰면 안 되기 때문이다.
+
 ## 3. 인증 흐름
 
 1. 가입/로그인 → 서버가 JWT `access`(60분) + `refresh`(7일) 발급.

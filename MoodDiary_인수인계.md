@@ -216,18 +216,19 @@
 
 ## 9. 진행 상황 / 다음 단계
 
-**완료** (`feature/mood-diary-mvp`, 병합 전)
+**완료** (MVP·UI 는 `master` 병합 완료, 다시 분석 기능은 `feature/diary-reanalyze` 미병합)
 1. ✅ 프로젝트 스켈레톤 (`frontend/`, `backend/`, `ai_server/`, `Docs/`, `docker-compose.yml`)
 2. ✅ Django Backend (인증 + Diary CRUD + 트렌드)
 3. ✅ Flask AI Server
 4. ✅ Reflex Frontend
-5. ✅ 자동 테스트 (AI 25 · Django 26 · 프론트 8) + 서버 연동 확인
-6. ✅ UI 디자인 "마음 날씨" 적용 (`feature/ui-design`) + 브라우저 클릭 흐름 11개 항목 확인
+5. ✅ 자동 테스트 (AI 25 · Django 33 · 프론트 9) + 서버 연동 확인
+6. ✅ UI 디자인 "마음 날씨" 적용 (`feature/ui-design`, 병합됨) + 브라우저 클릭 흐름 13개 항목 확인
+7. ✅ 저장된 일기 "다시 분석하기" (`POST /api/diaries/{id}/reanalyze`, 상세 화면 버튼)
 
 **남은 일**
-1. ⬜ 사용자 직접 화면 확인, Ollama 분석 결과를 화면에서 확인 — `Docs/vaildates/VALIDATION_CHECKLIST.md`
+1. ⬜ 사용자 직접 화면 확인, Edge 외 브라우저·접근성 점검 — `Docs/vaildates/VALIDATION_CHECKLIST.md`
 2. ⬜ 확장 기능 (검색, 월간 리포트, 태그) — 선택
-3. ⬜ 병합 (사용자 지시 시에만, `--no-ff`, 병합 기록 문서 일괄 작성)
+3. ⬜ `feature/diary-reanalyze` 병합 (사용자 지시 시에만, `--no-ff`, 병합 기록 문서 작성)
 
 ---
 
