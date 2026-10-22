@@ -19,6 +19,7 @@
 | 계층 | 위치 | 책임 |
 |------|------|------|
 | UI | `frontend/mood_diary/pages.py`, `components.py` | 화면 구성, 로딩/에러 표시 |
+| 스타일 | `frontend/assets/mood.css` | 디자인 시스템 "마음 날씨" (`Docs/guidance/DESIGN_GUIDE.md`) |
 | 상태 | `frontend/mood_diary/state.py` | 로그인 토큰, 목록/상세/트렌드 상태, 이벤트 핸들러 |
 | API 클라이언트 | `frontend/mood_diary/api.py` | Django 호출, 응답을 `ApiResult` 로 변환 (예외를 던지지 않음) |
 | 뷰 모델 | `frontend/mood_diary/view_models.py` | 응답 → 화면용 평평한 구조 (Reflex 비의존, 단독 테스트 가능) |

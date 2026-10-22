@@ -130,6 +130,9 @@
 - 상태 관리: Reflex State 클래스
 - 차트: Reflex 내장 또는 Plotly
 - AI 응답 지연 대비 로딩 상태 표시 필수
+- 디자인: 스타일은 `frontend/assets/mood.css` 한 파일 + `class_name` 으로 관리한다 (`Docs/guidance/DESIGN_GUIDE.md`)
+- 아이콘은 이모지/기호를 사용한다. `rx.icon`(lucide)을 다수 쓰면 Vite 개발 서버가 `504 Outdated Optimize Dep` 로 깨진다.
+- UI 변경 후에는 `python frontend/e2e/ui_flow.py` 로 클릭 흐름을 확인한다 (세 서버 실행 필요)
 
 ### 5.4 Flask AI Server
 - 주요 엔드포인트: `POST /analyze` (일기 텍스트 → 감정 결과)
@@ -218,10 +221,11 @@
 2. ✅ Django Backend (인증 + Diary CRUD + 트렌드)
 3. ✅ Flask AI Server
 4. ✅ Reflex Frontend
-5. ✅ 자동 테스트 (AI 13 · Django 26 · 프론트 5) + 서버 연동 확인
+5. ✅ 자동 테스트 (AI 25 · Django 26 · 프론트 8) + 서버 연동 확인
+6. ✅ UI 디자인 "마음 날씨" 적용 (`feature/ui-design`) + 브라우저 클릭 흐름 11개 항목 확인
 
 **남은 일**
-1. ⬜ 브라우저에서 화면 수동 검증 (차트 렌더링 포함) — `Docs/vaildates/VALIDATION_CHECKLIST.md`
+1. ⬜ 사용자 직접 화면 확인, Ollama 분석 결과를 화면에서 확인 — `Docs/vaildates/VALIDATION_CHECKLIST.md`
 2. ⬜ 확장 기능 (검색, 월간 리포트, 태그) — 선택
 3. ⬜ 병합 (사용자 지시 시에만, `--no-ff`, 병합 기록 문서 일괄 작성)
 

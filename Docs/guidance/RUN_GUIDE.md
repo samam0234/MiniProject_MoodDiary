@@ -53,7 +53,8 @@ ollama pull gemma4:12b       # 없을 때만, 약 7.6GB
 ```powershell
 cd ai_server;  python -m pytest            # 25개 (pytest 설치 필요: pip install pytest, 실제 LLM 호출 없음)
 cd backend;    python manage.py test       # 26개
-cd frontend;   python -m pytest tests      # 5개
+cd frontend;   python -m pytest tests      # 8개
+cd frontend;   python e2e/ui_flow.py        # 브라우저 클릭 흐름(선택): 세 서버 실행 중 + pip install playwright, Edge 사용
 ```
 
 ## 6. 문제 해결
@@ -67,6 +68,8 @@ cd frontend;   python -m pytest tests      # 5개
 | 일기가 항상 "중립 50%" + 안내 문구 | AI 서버 연결 실패(fallback). 5000 포트 서버, `AI_SERVER_URL`, **Ollama 실행 여부(`ollama list`)** 확인. 첫 호출이 timeout 보다 오래 걸리지 않는지도 확인 |
 | `.env` 를 바꿨는데 반영이 안 됨 | 서버를 재시작해야 한다. 5000 포트의 AI 서버가 예전 코드/설정으로 떠 있는지 확인 |
 | 임시로 서버를 띄웠는데 다른 응답(404 등)이 옴 | 그 포트를 다른 프로그램이 쓰는 중. `Get-NetTCPConnection -LocalPort <포트>` 로 확인 (예: 5055 는 innorixes 가 사용) |
+| 화면이 `Application Error: Failed to fetch dynamically imported module` 로 깨지고 콘솔에 `504 (Outdated Optimize Dep)` | Vite 개발 서버의 의존성 최적화 문제. 페이지에서 `rx.icon`(lucide)을 쓰지 않는다. 이미 생겼다면 `reflex run` 재시작(필요하면 `frontend/.web/node_modules/.vite` 삭제) |
+| CSS(`assets/mood.css`)를 고쳤는데 화면이 그대로 | 개발 서버는 `.py` 파일이 바뀔 때 assets 를 복사한다. 아무 `.py` 를 저장하거나 서버를 재시작 |
 | 로그인이 자꾸 풀림 | access 60분 만료 후 refresh 도 실패(7일 경과 또는 DB 초기화). 다시 로그인 |
 | DB 를 지운 뒤 오류 | `python manage.py migrate` 다시 실행 |
 
