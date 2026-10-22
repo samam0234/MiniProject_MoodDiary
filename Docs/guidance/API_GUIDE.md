@@ -42,6 +42,7 @@
 | GET | `/api/diaries/{id}` | 상세 |
 | PATCH / PUT | `/api/diaries/{id}` | 수정 (title/content 가 바뀌면 재분석) |
 | DELETE | `/api/diaries/{id}` | 삭제 → 204 (본문 없음) |
+| POST | `/api/diaries/{id}/reanalyze` | 저장된 일기를 현재 AI 모델로 다시 분석 (아래 §2-1) |
 
 요청 본문 (POST): `title`(필수, ≤200자), `content`(필수, ≤5000자), `entry_date`(선택, `YYYY-MM-DD`, 기본 오늘).
 `emotion_*`, `detailed_emotions`, `ai_message`, `analysis_source` 는 서버가 채우며 요청에 넣어도 무시된다.
@@ -71,6 +72,27 @@
 | 404 | 없는 일기 **또는 다른 사용자의 일기** |
 
 AI 서버가 장애여도 저장은 성공하며 `emotion_label="neutral"`, `emotion_score=0.5`, `analysis_source="fallback"` 으로 기록된다.
+
+### 2-1. 다시 분석 `POST /api/diaries/{id}/reanalyze`
+
+저장된 제목·본문을 **현재 AI 모델**로 다시 분석해 `emotion_*`, `detailed_emotions`, `ai_message`, `analysis_source` 를 갱신한다. 요청 본문은 없다. AI 서버 장애로 기본값(fallback)이 나왔던 일기를 복구하거나, 모델/프롬프트를 바꾼 뒤 결과를 갱신할 때 쓴다.
+
+```jsonc
+// 200 data: 일기 전체 + 이전 분석 결과(비교용)
+{
+  "id": 3, "title": "...", "emotion_label": "positive", "emotion_score": 0.9, "analysis_source": "ollama", "...": "...",
+  "previous": {"emotion_label": "neutral", "emotion_score": 0.5, "analysis_source": "fallback"}
+}
+```
+
+| 상태 | 상황 |
+|------|------|
+| 200 | 재분석 성공 (결과가 같아도 200) |
+| 503 | AI 서버 장애/시간 초과/잘못된 응답. **기존 분석 결과는 그대로 유지**되고 `error.message` 에 안내 문구가 담긴다 |
+| 401 / 404 | 인증 없음 / 없는 일기 또는 다른 사용자의 일기 (이 경우 AI 도 호출하지 않는다) |
+| 405 | POST 외 메서드 |
+
+> 수정(PATCH)은 본문이 바뀔 때만 재분석하고 장애 시 fallback 값으로 저장하지만, 다시 분석은 장애 시 **저장하지 않고 오류를 돌려준다.** 좋은 결과가 기본값으로 덮이는 것을 막기 위함이다.
 
 ## 3. 감정 트렌드 `GET /api/emotions/trend?days=7`
 

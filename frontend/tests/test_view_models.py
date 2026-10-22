@@ -74,3 +74,17 @@ def test_describe_trend():
     assert "맑은 날" in describe_trend({"positive": 3, "negative": 1, "neutral": 1}, 7)
     assert "비 오는 날" in describe_trend({"positive": 1, "negative": 4, "neutral": 1}, 30)
     assert "맑은 날" in describe_trend({"positive": 2, "negative": 2, "neutral": 0}, 7)  # 동률은 긍정 우선
+
+
+def test_describe_reanalysis():
+    from mood_diary.view_models import describe_reanalysis
+
+    new = {"emotion_label": "positive", "emotion_score": 0.77}
+    changed = describe_reanalysis({"emotion_label": "neutral", "emotion_score": 0.5, "analysis_source": "ollama"}, new)
+    assert changed == "다시 분석했어요 · ☁️ 중립 50% → ☀️ 긍정 77%"
+
+    same = describe_reanalysis({"emotion_label": "positive", "emotion_score": 0.77, "analysis_source": "ollama"}, new)
+    assert "그대로" in same and "☀️ 긍정 77%" in same
+
+    after_outage = describe_reanalysis({"emotion_label": "neutral", "emotion_score": 0.5, "analysis_source": "fallback"}, new)
+    assert after_outage.startswith("AI 분석이 완료됐어요") and "(기본값)" in after_outage

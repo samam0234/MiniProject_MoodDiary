@@ -52,8 +52,8 @@ ollama pull gemma4:12b       # 없을 때만, 약 7.6GB
 
 ```powershell
 cd ai_server;  python -m pytest            # 25개 (pytest 설치 필요: pip install pytest, 실제 LLM 호출 없음)
-cd backend;    python manage.py test       # 26개
-cd frontend;   python -m pytest tests      # 8개
+cd backend;    python manage.py test       # 33개
+cd frontend;   python -m pytest tests      # 9개
 cd frontend;   python e2e/ui_flow.py        # 브라우저 클릭 흐름(선택): 세 서버 실행 중 + pip install playwright, Edge 사용
 ```
 

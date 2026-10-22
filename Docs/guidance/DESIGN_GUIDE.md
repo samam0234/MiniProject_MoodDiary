@@ -45,7 +45,8 @@
 | `hero` | 로그인/가입 2단 카드 | `pages._auth_page` |
 | `btn btn-primary/ghost/danger` | 버튼 | 전 페이지 |
 | `thinking`, `skeleton` | AI 분석 중 점 3개, 목록 로딩 스켈레톤 | `components.thinking`, `skeleton_list` |
-| `notice error/warn` | 오류/AI 서버 fallback 안내 | `components.error_notice`, 상세 페이지 |
+| `notice error/warn/info` | 오류/AI 서버 fallback 안내/다시 분석 결과 안내 | `components.error_notice`, 상세 페이지 |
+| `detail-actions` | 상세 하단 "다시 분석하기"·삭제 버튼 줄 (안내는 이 줄 바로 위) | `pages.diary_detail_page` |
 
 화면에 쓰는 값(이모지, 날짜 조각, 날씨 라벨)은 `frontend/mood_diary/view_models.py` 에서 만들고 단위 테스트가 있다.
 
@@ -72,4 +73,5 @@ cd frontend
 python e2e/ui_flow.py            # 세 서버가 실행 중이어야 함, e2e_xxxxx 계정이 DB 에 남는다
 ```
 
-결과: 11개 항목(로그인 오류 → 로그인 → 작성·분석 → 상세 → 차트 → 삭제 → 로그아웃 → 보호 페이지 차단, 콘솔 오류 없음) 통과.
+결과: 13개 항목(로그인 오류 → 로그인 → 작성·분석 → 상세 → **다시 분석하기** → 차트 → 삭제 → 로그아웃 → 보호 페이지 차단, 콘솔 오류 없음) 통과.
+스크린샷은 기본적으로 시스템 임시 폴더(`<TEMP>/mood_diary_e2e`)에 저장된다. `frontend/` 안에 저장하면 Reflex 개발 서버가 파일 변경으로 재시작되어 테스트가 끊긴다.

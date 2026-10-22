@@ -12,6 +12,7 @@ from .view_models import (
     DiaryItem,
     TrendPoint,
     describe_average,
+    describe_reanalysis,
     describe_trend,
     to_diary_item,
     to_trend_points,
@@ -30,6 +31,9 @@ class AppState(rx.State):
     error_message: str = ""
     is_loading: bool = False  # 목록/상세/트렌드 조회 중
     is_saving: bool = False  # 폼 제출(로그인/저장/AI 분석) 중
+    is_reanalyzing: bool = False  # 저장된 일기 다시 분석 중
+    reanalyze_notice: str = ""  # 다시 분석 결과 비교 문구 (버튼 바로 위에 표시)
+    reanalyze_error: str = ""  # 다시 분석 실패 문구 (전역 오류 대신 버튼 근처에 표시)
 
     diaries: list[DiaryItem] = []
     diary: DiaryItem = EMPTY_DIARY
@@ -225,6 +229,8 @@ class AppState(rx.State):
             return
         diary_id = self.router.page.params.get("diary_id", "")
         self.error_message = ""
+        self.reanalyze_notice = ""
+        self.reanalyze_error = ""
         self.diary = EMPTY_DIARY
         self.is_loading = True
         yield
@@ -237,6 +243,27 @@ class AppState(rx.State):
             self.error_message = "일기를 찾을 수 없습니다." if result.status == 404 else result.error
             return
         self.diary = to_diary_item(result.data)
+
+    @rx.event
+    async def reanalyze_diary(self):
+        """저장된 일기를 현재 AI 모델로 다시 분석한다. 실패하면 기존 결과가 그대로 유지된다."""
+        if self.is_reanalyzing or not self.diary["id"]:
+            return
+        self.is_reanalyzing = True
+        self.reanalyze_notice = ""
+        self.reanalyze_error = ""
+        yield
+        result = await self._call("POST", f"/api/diaries/{self.diary['id']}/reanalyze")
+        self.is_reanalyzing = False
+        if result.status == 401:
+            yield self._session_expired()
+            return
+        if not result.ok:
+            self.reanalyze_error = result.error
+            return
+        previous = result.data.pop("previous", {})
+        self.diary = to_diary_item(result.data)
+        self.reanalyze_notice = describe_reanalysis(previous, result.data)
 
     @rx.event
     async def delete_diary(self):

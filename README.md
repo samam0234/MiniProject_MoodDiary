@@ -17,9 +17,9 @@
 
 ## 현재 상태
 
-`feature/mood-diary-mvp` 에서 MVP 구현 완료 (병합 전). 자동 테스트 59개 통과(AI 25 · Django 26 · 프론트 8), 세 서버 연동 확인. 감정 분석은 Ollama `gemma4:12b` 사용.
-UI 는 "마음 날씨" 컨셉으로 디자인했고(`feature/ui-design`), 실제 브라우저(Edge)에서 로그인 → 작성 → 차트 → 삭제 → 로그아웃 흐름을 확인했다.
-**아직 확인하지 않은 것**: Edge 외 브라우저·실기기, 색 대비 등 접근성 점검, transformers 백엔드, PostgreSQL 연결, 화면에서 Ollama 분석 결과 표시. 자세한 내용은 [검증 체크리스트](Docs/vaildates/VALIDATION_CHECKLIST.md).
+MVP 와 UI 디자인은 `master` 에 병합되어 있고, 저장된 일기를 다시 분석하는 기능은 `feature/diary-reanalyze` 에서 작업했다. 자동 테스트 67개 통과(AI 25 · Django 33 · 프론트 9), 세 서버 연동 확인. 감정 분석은 Ollama `gemma4:12b` 사용.
+UI 는 "마음 날씨" 컨셉으로 디자인했고(`feature/ui-design`), 실제 브라우저(Edge)에서 로그인 → 작성 → **다시 분석** → 차트 → 삭제 → 로그아웃 흐름 13개 항목을 확인했다(Ollama 로 분석·재분석 포함).
+**아직 확인하지 않은 것**: Edge 외 브라우저·실기기, 색 대비 등 접근성 점검, transformers 백엔드, PostgreSQL 연결. 자세한 내용은 [검증 체크리스트](Docs/vaildates/VALIDATION_CHECKLIST.md).
 
 > Reflex의 기본 백엔드 포트는 8000이라 Django와 충돌한다. 그래서 [frontend/rxconfig.py](frontend/rxconfig.py)에서 8001로 분리했다.
 
@@ -84,8 +84,8 @@ CLAUDE.md                       # 인수인계 문서를 가리키기만 한다
 
 ```powershell
 cd ai_server; python -m pytest        # 25개 (pip install pytest 필요, 실제 LLM 호출 없음)
-cd backend;   python manage.py test   # 26개
-cd frontend;  python -m pytest tests  # 8개
+cd backend;   python manage.py test   # 33개
+cd frontend;  python -m pytest tests  # 9개
 python frontend/e2e/ui_flow.py        # 브라우저 클릭 흐름 (세 서버 실행 + pip install playwright 필요)
 ```
 
@@ -99,6 +99,7 @@ python frontend/e2e/ui_flow.py        # 브라우저 클릭 흐름 (세 서버 �
 | GET | `/api/auth/me` | 내 정보 |
 | GET / POST | `/api/diaries` | 목록(페이지네이션) / 작성 + 감정 분석 |
 | GET / PATCH / DELETE | `/api/diaries/{id}` | 상세 / 수정(본문 변경 시 재분석) / 삭제 |
+| POST | `/api/diaries/{id}/reanalyze` | 저장된 일기를 현재 AI 모델로 **다시 분석** (AI 장애 시 기존 결과 유지, 503) |
 | GET | `/api/emotions/trend?days=7` | 최근 N일 일자별 감정 추이 (1~90) |
 
 인증이 필요한 API는 `Authorization: Bearer <access>` 헤더를 사용한다. 일기는 항상 본인 것만 조회·수정된다. 요청/응답 예시는 [API 가이드](Docs/guidance/API_GUIDE.md).
