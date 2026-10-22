@@ -148,6 +148,21 @@ def to_trend_points(raw_points: list[dict[str, Any]]) -> list[TrendPoint]:
     ]
 
 
+def _weather_text(label: str, score: float) -> str:
+    return f"{SENTIMENT_EMOJI.get(label, '☁️')} {SENTIMENT_TEXT.get(label, label)} {round(float(score) * 100)}%"
+
+
+def describe_reanalysis(previous: dict[str, Any], current: dict[str, Any]) -> str:
+    """다시 분석한 결과를 이전 결과와 비교해 한 줄로 알려준다. (원시 API 응답 두 개를 받는다)"""
+    before = _weather_text(previous.get("emotion_label", "neutral"), previous.get("emotion_score", 0.0))
+    after = _weather_text(current.get("emotion_label", "neutral"), current.get("emotion_score", 0.0))
+    if previous.get("analysis_source") == "fallback":
+        return f"AI 분석이 완료됐어요 · {before} (기본값) → {after}"
+    if before == after:
+        return f"다시 분석했어요 · 결과는 그대로예요 ({after})"
+    return f"다시 분석했어요 · {before} → {after}"
+
+
 def describe_trend(label_counts: dict[str, int], days: int) -> str:
     """기간 동안 가장 많았던 마음 날씨를 한 문장으로 요약한다. (동률이면 긍정 > 부정 > 중립 순)"""
     if sum(label_counts.values()) == 0:

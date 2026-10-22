@@ -5,7 +5,10 @@
 
 사전 조건: AI 서버(5000), Django(8000), Reflex(3000)가 실행 중이어야 한다.
 준비:      pip install playwright   (브라우저는 설치된 Microsoft Edge 를 사용한다. Chrome 은 --channel chrome)
-실행:      python e2e/ui_flow.py [--channel msedge] [--shots e2e/shots]
+실행:      python e2e/ui_flow.py [--channel msedge] [--shots <스크린샷 폴더>]
+
+스크린샷은 기본적으로 시스템 임시 폴더(<TEMP>/mood_diary_e2e)에 저장한다. 프로젝트의 frontend/ 안에 저장하면
+Reflex 개발 서버가 파일 변경을 감지해 재시작되면서 테스트 도중 세션이 끊긴다.
 
 주의: 실행할 때마다 `e2e_xxxxx` 테스트 계정과 일기 3건이 개발 DB 에 남는다. (삭제 API 가 없다)
       `python manage.py shell` 에서 `User.objects.filter(username__startswith="e2e_").delete()` 로 지울 수 있다.
@@ -15,6 +18,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+import tempfile
 import uuid
 from datetime import date
 from pathlib import Path
@@ -36,10 +40,11 @@ SEED = [
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--channel", default="msedge")
-    parser.add_argument("--shots", default=str(Path(__file__).parent / "shots"))
+    parser.add_argument("--shots", default=str(Path(tempfile.gettempdir()) / "mood_diary_e2e"))
     args = parser.parse_args()
     shots = Path(args.shots)
     shots.mkdir(parents=True, exist_ok=True)
+    print(f"스크린샷 저장 위치: {shots}")
 
     username = f"e2e_{uuid.uuid4().hex[:6]}"
     tokens = requests.post(
@@ -96,6 +101,14 @@ def main() -> int:
         check("상세: 제목·본문", "UI 흐름 점검" in page.inner_text("h1") and "뿌듯" in page.inner_text(".reading-body"))
         page.screenshot(path=str(shots / "detail.png"), full_page=True)
         detail_url = page.url
+
+        # 3-1. 다시 분석하기 (결과 비교 안내가 나오고, 날씨 카드가 유지되어야 한다)
+        page.get_by_role("button", name="다시 분석하기").click()
+        page.wait_for_selector(".notice.info", timeout=90000)
+        notice = page.inner_text(".notice.info").replace("\n", " ")
+        check("다시 분석하기 → 결과 비교 안내", "다시 분석" in notice or "분석이 완료" in notice, notice)
+        check("다시 분석 후 날씨 카드 유지", "마음 날씨" in page.inner_text(".sky"))
+        page.screenshot(path=str(shots / "detail_reanalyzed.png"), full_page=True)
 
         # 4. 트렌드
         page.get_by_role("link", name="마음 날씨").click()
